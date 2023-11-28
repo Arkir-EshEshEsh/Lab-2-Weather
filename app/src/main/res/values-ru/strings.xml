@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Лаба 2 (Погода)</string>
+    <string name="city_text">Город:</string>
+    <string name="temp_text">Температура:</string>
+    <string name="pressure_unit_text">мм рт.ст</string>
+    <string name="pressure_text">Давление:</string>
+    <string name="city_edit">Введите город</string>
+    <string name="weather_today">Погода сегодня</string>
+    <string name="enter_city">Город не введён</string>
+    <string name="internet_error">Произошла ошибка</string>
+    <string name="sunrise_text">Восход:</string>
+    <string name="weather_main_text">Погода:</string>
+    <string name="weather_desc_text">Описание:</string>
+    <string name="humidity_text">Влажность:</string>
+    <string name="wind_speed_text">Скорость ветра:</string>
+    <string name="visibility_text">Видимость:</string>
+    <string name="metre_text">м</string>
+    <string name="metrePerSecond_text">м/с</string>
+    <string name="sunset_text">Закат:</string>
+    <string name="search_button_text">Искать</string>
+    <string name="temp_FeelsLike_text">Как ощущается:</string>
+    <string name="gps_permission_text">Нет разрешения на использование GPS</string>
+    <string name="gps_button">По GPS</string>
+</resources>

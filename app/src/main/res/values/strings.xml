@@ -1,0 +1,24 @@
+<resources>
+    <string name="search_button_text">Search</string>
+    <string name="app_name">Lab 2 (Weather)</string>
+    <string name="weather_today">Weather today</string>
+    <string name="city_edit">Enter the city</string>
+    <string name="city_text">City:</string>
+    <string name="temp_text">Temperature: </string>
+    <string name="temp_FeelsLike_text">Feels like: </string>
+    <string name="pressure_text">Pressure: </string>
+    <string name="pressure_unit_text">mm Hg</string>
+    <string name="enter_city">City not entered</string>
+    <string name="internet_error">An error has occured</string>
+    <string name="sunrise_text">Sunrise:</string>
+    <string name="sunset_text">Sunset:</string>
+    <string name="weather_main_text">Weather:</string>
+    <string name="weather_desc_text">Description:</string>
+    <string name="humidity_text">Humidity:</string>
+    <string name="wind_speed_text">Wind speed:</string>
+    <string name="visibility_text">Visibility:</string>
+    <string name="metre_text">m</string>
+    <string name="metrePerSecond_text">m/s</string>
+    <string name="gps_permission_text">No GPS permissions</string>
+    <string name="gps_button">By GPS</string>
+</resources>
