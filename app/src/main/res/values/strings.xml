@@ -20,5 +20,6 @@
     <string name="metre_text">m</string>
     <string name="metrePerSecond_text">m/s</string>
     <string name="gps_permission_text">No GPS permissions</string>
-    <string name="gps_button">By GPS</string>
+    <string name="gps_button_text">By GPS</string>
+    <string name="gps_disabled_text">GPS is not enabled</string>
 </resources>

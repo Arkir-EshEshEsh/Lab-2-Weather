@@ -21,5 +21,6 @@
     <string name="search_button_text">Искать</string>
     <string name="temp_FeelsLike_text">Как ощущается:</string>
     <string name="gps_permission_text">Нет разрешения на использование GPS</string>
-    <string name="gps_button">По GPS</string>
+    <string name="gps_button_text">По GPS</string>
+    <string name="gps_disabled_text">GPS не включён</string>
 </resources>

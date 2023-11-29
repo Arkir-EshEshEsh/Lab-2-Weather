@@ -31,7 +31,7 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
-    LocationManager LocationManager;
+    LocationManager locationManager;
     private EditText cityEdit;
     private TextView cityView, tempView, tempFeelsLikeView, pressView, sunriseView, sunsetView, humidityView, weatherDescView, visibilityView, windSpeedView;
     private Button getWeatherBtn, getWeatherGpsBtn;
@@ -134,19 +134,13 @@ public class MainActivity extends AppCompatActivity {
     public View.OnClickListener geoSearch = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+
             loadingPB.setVisibility(ProgressBar.VISIBLE);
 
             double[] gps = geoLocData();
 
-            if (gps == null &&
-                    ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                    ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if(gps == null) {
                 loadingPB.setVisibility(ProgressBar.GONE);
-                Toast.makeText(getApplicationContext(), getString(R.string.gps_permission_text), Toast.LENGTH_SHORT).show();
-                return;
-            } else if(gps == null) {
-                loadingPB.setVisibility(ProgressBar.GONE);
-                Toast.makeText(getApplicationContext(), getString(R.string.internet_error), Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -202,8 +196,6 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private void init() {
-        //geoLocWeatherData();
-
         cityEdit = findViewById( R.id.city_text_edit );
 
         cityView = findViewById( R.id.city_text_view );
@@ -228,13 +220,20 @@ public class MainActivity extends AppCompatActivity {
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 100);
+            Toast.makeText(getApplicationContext(), getString(R.string.gps_permission_text), Toast.LENGTH_SHORT).show();
             return null;
         } else {
-            LocationManager = (LocationManager)getApplicationContext().getSystemService(LOCATION_SERVICE);
-            List<String> providers = LocationManager.getProviders(true);
+            locationManager = (LocationManager)getApplicationContext().getSystemService(LOCATION_SERVICE);
+
+            if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                Toast.makeText(getApplicationContext(), R.string.gps_disabled_text, Toast.LENGTH_SHORT).show();
+                return null;
+            }
+
+            List<String> providers = locationManager.getProviders(true);
             Location bestLocation = null;
             for (String provider : providers) {
-                Location l = LocationManager.getLastKnownLocation(provider);
+                Location l = locationManager.getLastKnownLocation(provider);
                 if (l == null) {
                     continue;
                 }
@@ -246,8 +245,13 @@ public class MainActivity extends AppCompatActivity {
 
             double[] gps = new double[2];
 
-            gps[0] = bestLocation.getLatitude();
-            gps[1] = bestLocation.getLongitude();
+            try {
+                gps[0] = bestLocation.getLatitude();
+                gps[1] = bestLocation.getLongitude();
+            } catch(NullPointerException e) {
+                Toast.makeText(getApplicationContext(), R.string.internet_error, Toast.LENGTH_SHORT).show();
+                return null;
+            }
 
             return gps;
         }

@@ -82,7 +82,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="@string/gps_button"
+        android:text="@string/gps_button_text"
         android:id="@+id/gps_weather_update_button"
         android:layout_marginTop="5dp" />
 
