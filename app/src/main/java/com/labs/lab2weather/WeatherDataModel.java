@@ -23,6 +23,12 @@ public class WeatherDataModel {
     @SerializedName("visibility")
     private int visibility;
 
+    @SerializedName("rain")
+    private Rain rain;
+
+    @SerializedName("snow")
+    private Snow snow;
+
     public String getCityName() {
         return cityName;
     }
@@ -41,6 +47,14 @@ public class WeatherDataModel {
 
     public Wind getWind() {
         return wind;
+    }
+
+    public Rain getRain() {
+        return rain;
+    }
+
+    public Snow getSnow() {
+        return snow;
     }
 
     public List<Weather> getWeather() {
@@ -107,4 +121,33 @@ public class WeatherDataModel {
         }
     }
 
+    public static class Rain {
+        @SerializedName("1h")
+        private float rain1h;
+        @SerializedName("2h")
+        private float rain3h;
+
+        public float getRain1h() {
+            return rain1h;
+        }
+
+        public float getRain3h() {
+            return rain3h;
+        }
+    }
+
+    public static class Snow {
+        @SerializedName("1h")
+        private float snow1h;
+        @SerializedName("2h")
+        private float snow3h;
+
+        public float getSnow1h() {
+            return snow1h;
+        }
+
+        public float getSnow3h() {
+            return snow3h;
+        }
+    }
 }

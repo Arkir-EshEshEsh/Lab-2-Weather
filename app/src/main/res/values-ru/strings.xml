@@ -3,7 +3,7 @@
     <string name="app_name">Лаба 2 (Погода)</string>
     <string name="city_text">Город:</string>
     <string name="temp_text">Температура:</string>
-    <string name="pressure_unit_text">мм рт.ст</string>
+    <string name="unit_pressure_text">мм рт.ст</string>
     <string name="pressure_text">Давление:</string>
     <string name="city_edit">Введите город</string>
     <string name="weather_today">Погода сегодня</string>
@@ -15,12 +15,17 @@
     <string name="humidity_text">Влажность:</string>
     <string name="wind_speed_text">Скорость ветра:</string>
     <string name="visibility_text">Видимость:</string>
-    <string name="metre_text">м</string>
-    <string name="metrePerSecond_text">м/с</string>
+    <string name="unit_metre_text">м</string>
+    <string name="unit_metrePerSecond_text">м/с</string>
     <string name="sunset_text">Закат:</string>
     <string name="search_button_text">Искать</string>
     <string name="temp_FeelsLike_text">Как ощущается:</string>
     <string name="gps_permission_text">Нет разрешения на использование GPS</string>
     <string name="gps_button_text">По GPS</string>
     <string name="gps_disabled_text">GPS не включён</string>
+    <string name="rain_1h_text">Осадки за последний час:</string>
+    <string name="rain_3h_text">Осадки за последние 3 часа:</string>
+    <string name="snow_1h_text">Снег за последний час:</string>
+    <string name="snow_3h_text">Snow in the last 3 hours:</string>
+    <string name="unit_mm_text">мм</string>
 </resources>

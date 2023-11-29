@@ -5,13 +5,19 @@ import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,14 +32,14 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-//https://api.openweathermap.org/data/2.5/weather?lat=52.9685433&lon=36.0692477&units=metric&lang=ru&appid=703d2de218953f8c05f7ee21a117fbec
-//Geo api https://api.openweathermap.org/geo/1.0/direct?q=Орёл&limit=1&appid=703d2de218953f8c05f7ee21a117fbec
-
 public class MainActivity extends AppCompatActivity {
 
     LocationManager locationManager;
+    private String TAG = "MyActivity";
     private EditText cityEdit;
-    private TextView cityView, tempView, tempFeelsLikeView, pressView, sunriseView, sunsetView, humidityView, weatherDescView, visibilityView, windSpeedView;
+    private TextView cityView, tempView, tempFeelsLikeView, pressView, sunriseView,
+            sunsetView, humidityView, weatherDescView, visibilityView, windSpeedView,
+            rainfall1hView, rainfall3hView, snowfall1hView, snowfall3hView;
     private Button getWeatherBtn, getWeatherGpsBtn;
     private ProgressBar loadingPB;
 
@@ -41,10 +47,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        init();
 
-        getWeatherBtn.setOnClickListener(textSearch);
-        getWeatherGpsBtn.setOnClickListener(geoSearch);
+        init();
     }
 
     public View.OnClickListener textSearch = new View.OnClickListener() {
@@ -55,9 +59,20 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
+            getWeatherGpsBtn.setEnabled(false);
+            getWeatherBtn.setEnabled(false);
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    getWeatherGpsBtn.setEnabled(true);
+                    getWeatherBtn.setEnabled(true);
+                }
+            }, 10000);
+
             loadingPB.setVisibility(ProgressBar.VISIBLE);
 
-            GeoApi geoApi = GeoRetrofitClient.getRetrofitInstance(GeoApi.GEO_BASE_URL).create(GeoApi.class);
+            GeoApi geoApi = RetrofitClient.getGeoTextRetrofitInstance(GeoApi.GEO_BASE_URL).create(GeoApi.class);
             Call<List<GeoDataModel>> geoCall = geoApi.getGeoData(cityEdit.getText().toString());
             geoCall.enqueue(new Callback<List<GeoDataModel>>() {
                 @Override
@@ -67,42 +82,16 @@ public class MainActivity extends AppCompatActivity {
                         float lat = geoData.get(0).getLat();
                         float lon = geoData.get(0).getLon();
 
-                        WeatherApi weatherApi = WeatherRetrofitClient.getRetrofitInstance(WeatherApi.WEATHER_BASE_URL).create(WeatherApi.class);
+                        WeatherApi weatherApi = RetrofitClient.getWeatherRetrofitInstance(WeatherApi.WEATHER_BASE_URL).create(WeatherApi.class);
                         Call<WeatherDataModel> weatherCall = weatherApi.getWeatherData(Locale.getDefault().getLanguage(), lat, lon);
                         weatherCall.enqueue(new Callback<WeatherDataModel>() {
                             @Override
                             public void onResponse(Call<WeatherDataModel> call, Response<WeatherDataModel> response) {
                                 try {
-                                    String name = response.body().getCityName();
-                                    String weatherDesc = response.body().getWeather().get(0).getDescription();
-                                    float temp = response.body().getMain().getTemp();
-                                    float tempFeelsLike = response.body().getMain().getTempFeelsLike();
-                                    float pressure = response.body().getMain().getPressure();
-                                    float windSpeed = response.body().getWind().getSpeed();
-                                    int sunrise = response.body().getSys().getSunriseTime();
-                                    int sunset = response.body().getSys().getSunsetTime();
-                                    int humidity = response.body().getMain().getHumidity();
-                                    int visibility = response.body().getVisibility();
-
-                                    Date sunriseDate = new Date((long) sunrise * 1000);
-                                    Date sunsetDate = new Date((long) sunset * 1000);
-                                    SimpleDateFormat format = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ss a");
-                                    format.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"));
-
-                                    cityView.setText(getString(R.string.city_text) + " " + name);
-                                    weatherDescView.setText(getString(R.string.weather_main_text) + " " + weatherDesc);
-                                    tempView.setText(getString(R.string.temp_text) + " " + String.valueOf(temp) + " °C");
-                                    tempFeelsLikeView.setText(getString(R.string.temp_FeelsLike_text) + " " + String.valueOf(tempFeelsLike)  + " °C");
-                                    humidityView.setText(getString(R.string.humidity_text) + " " + humidity + "%");
-                                    windSpeedView.setText(getString(R.string.wind_speed_text) + " " + windSpeed + " " + getString(R.string.metrePerSecond_text));
-                                    visibilityView.setText(getString(R.string.visibility_text) + " " + visibility + " " + getString(R.string.metre_text));
-                                    pressView.setText(getString(R.string.pressure_text) + " " + String.valueOf(pressure * 0.750064f) + " " + getString(R.string.pressure_unit_text));
-                                    sunriseView.setText(getString(R.string.sunrise_text) + " " + format.format(sunriseDate));
-                                    sunsetView.setText(getString(R.string.sunset_text) + " " + format.format(sunsetDate));
+                                    setText(response);
 
                                     loadingPB.setVisibility(ProgressBar.GONE);
                                 } catch (Exception e) {
-                                    cityView.setText(e.toString());
                                     Toast.makeText(getApplicationContext(), R.string.internet_error, Toast.LENGTH_SHORT).show();
                                     loadingPB.setVisibility(ProgressBar.GONE);
                                 }
@@ -144,50 +133,76 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
-            WeatherApi weatherApi = WeatherRetrofitClient.getRetrofitInstance(WeatherApi.WEATHER_BASE_URL).create(WeatherApi.class);
-            Call<WeatherDataModel> weatherCall = weatherApi.getWeatherData(Locale.getDefault().getLanguage(), (float)gps[0], (float)gps[1]);
-            weatherCall.enqueue(new Callback<WeatherDataModel>() {
+            getWeatherGpsBtn.setEnabled(false);
+            getWeatherBtn.setEnabled(false);
+
+            new Handler().postDelayed(new Runnable() {
                 @Override
-                public void onResponse(Call<WeatherDataModel> call, Response<WeatherDataModel> response) {
+                public void run() {
+                    getWeatherGpsBtn.setEnabled(true);
+                    getWeatherBtn.setEnabled(true);
+                }
+            }, 10000);
+
+            GeoCoordApi geoCoordApi = RetrofitClient.getGeoCoordRetrofitInstance(GeoCoordApi.GEO_CORD_BASE_URL).create(GeoCoordApi.class);
+            Call<List<GeoDataModel>> geoCoordCall = geoCoordApi.getCoordData((float)gps[0], (float)gps[1]);
+            geoCoordCall.enqueue(new Callback<List<GeoDataModel>>() {
+                @Override
+                public void onResponse(Call<List<GeoDataModel>> call, Response<List<GeoDataModel>> response) {
                     try {
-                        String name = response.body().getCityName();
-                        String weatherDesc = response.body().getWeather().get(0).getDescription();
-                        float temp = response.body().getMain().getTemp();
-                        float tempFeelsLike = response.body().getMain().getTempFeelsLike();
-                        float pressure = response.body().getMain().getPressure();
-                        float windSpeed = response.body().getWind().getSpeed();
-                        int sunrise = response.body().getSys().getSunriseTime();
-                        int sunset = response.body().getSys().getSunsetTime();
-                        int humidity = response.body().getMain().getHumidity();
-                        int visibility = response.body().getVisibility();
+                        GeoApi geoApi = RetrofitClient.getGeoTextRetrofitInstance(GeoApi.GEO_BASE_URL).create(GeoApi.class);
+                        Call<List<GeoDataModel>> geoCall = geoApi.getGeoData(response.body().get(0).getLocal_names().getEn());
+                        geoCall.enqueue(new Callback<List<GeoDataModel>>() {
+                            @Override
+                            public void onResponse(Call<List<GeoDataModel>> call, Response<List<GeoDataModel>> response) {
+                                try {
+                                    List<GeoDataModel> geoData = response.body();
+                                    float lat = geoData.get(0).getLat();
+                                    float lon = geoData.get(0).getLon();
 
-                        Date sunriseDate = new Date((long) sunrise * 1000);
-                        Date sunsetDate = new Date((long) sunset * 1000);
-                        SimpleDateFormat format = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ss a");
-                        format.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"));
+                                    WeatherApi weatherApi = RetrofitClient.getWeatherRetrofitInstance(WeatherApi.WEATHER_BASE_URL).create(WeatherApi.class);
+                                    Call<WeatherDataModel> weatherCall = weatherApi.getWeatherData(Locale.getDefault().getLanguage(), lat, lon);
+                                    weatherCall.enqueue(new Callback<WeatherDataModel>() {
+                                        @Override
+                                        public void onResponse(Call<WeatherDataModel> call, Response<WeatherDataModel> response) {
+                                            try {
+                                                setText(response);
 
-                        cityView.setText(getString(R.string.city_text) + " " + name);
-                        weatherDescView.setText(getString(R.string.weather_main_text) + " " + weatherDesc);
-                        tempView.setText(getString(R.string.temp_text) + " " + String.valueOf(temp) + " °C");
-                        tempFeelsLikeView.setText(getString(R.string.temp_FeelsLike_text) + " " + String.valueOf(tempFeelsLike)  + " °C");
-                        humidityView.setText(getString(R.string.humidity_text) + " " + humidity + "%");
-                        windSpeedView.setText(getString(R.string.wind_speed_text) + " " + windSpeed + " " + getString(R.string.metrePerSecond_text));
-                        visibilityView.setText(getString(R.string.visibility_text) + " " + visibility + " " + getString(R.string.metre_text));
-                        pressView.setText(getString(R.string.pressure_text) + " " + String.valueOf(pressure * 0.750064f) + " " + getString(R.string.pressure_unit_text));
-                        sunriseView.setText(getString(R.string.sunrise_text) + " " + format.format(sunriseDate));
-                        sunsetView.setText(getString(R.string.sunset_text) + " " + format.format(sunsetDate));
+                                                loadingPB.setVisibility(ProgressBar.GONE);
+                                            } catch (Exception e) {
+                                                Toast.makeText(getApplicationContext(), R.string.internet_error, Toast.LENGTH_SHORT).show();
+                                                loadingPB.setVisibility(ProgressBar.GONE);
+                                            }
+                                        }
 
-                        loadingPB.setVisibility(ProgressBar.GONE);
-                    } catch (Exception e) {
-                        cityView.setText(e.toString());
+                                        @Override
+                                        public void onFailure(Call<WeatherDataModel> call, Throwable t) {
+
+                                            Toast.makeText(getApplicationContext(), R.string.internet_error, Toast.LENGTH_SHORT).show();
+                                            loadingPB.setVisibility(ProgressBar.GONE);
+                                        }
+                                    });
+                                } catch (Exception e) {
+                                    Toast.makeText(getApplicationContext(), R.string.internet_error, Toast.LENGTH_SHORT).show();
+                                    loadingPB.setVisibility(ProgressBar.GONE);
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<List<GeoDataModel>> call, Throwable t) {
+
+                                Toast.makeText(getApplicationContext(), R.string.internet_error, Toast.LENGTH_SHORT).show();
+                                loadingPB.setVisibility(ProgressBar.GONE);
+                            }
+                        });
+                    } catch (NullPointerException e) {
                         Toast.makeText(getApplicationContext(), R.string.internet_error, Toast.LENGTH_SHORT).show();
                         loadingPB.setVisibility(ProgressBar.GONE);
                     }
                 }
 
                 @Override
-                public void onFailure(Call<WeatherDataModel> call, Throwable t) {
-
+                public void onFailure(Call<List<GeoDataModel>> call, Throwable t) {
                     Toast.makeText(getApplicationContext(), R.string.internet_error, Toast.LENGTH_SHORT).show();
                     loadingPB.setVisibility(ProgressBar.GONE);
                 }
@@ -200,6 +215,10 @@ public class MainActivity extends AppCompatActivity {
 
         cityView = findViewById( R.id.city_text_view );
         weatherDescView = findViewById( R.id.weather_desc_text_view );
+        rainfall1hView = findViewById( R.id.rainfall_1h_text_view );
+        rainfall3hView = findViewById( R.id.rainfall_3h_text_view );
+        snowfall1hView = findViewById( R.id.snowfall_1h_text_view );
+        snowfall3hView = findViewById( R.id.snowfall_3h_text_view );
         tempView = findViewById( R.id.temp_text_view );
         tempFeelsLikeView = findViewById( R.id.temp_feelsLike_text_view );
         humidityView = findViewById( R.id.humidity_text_view );
@@ -213,6 +232,9 @@ public class MainActivity extends AppCompatActivity {
         getWeatherGpsBtn = findViewById( R.id.gps_weather_update_button );
 
         loadingPB = findViewById( R.id.weather_progress_bar );
+
+        getWeatherBtn.setOnClickListener(textSearch);
+        getWeatherGpsBtn.setOnClickListener(geoSearch);
     }
 
     private double[] geoLocData() {
@@ -255,5 +277,149 @@ public class MainActivity extends AppCompatActivity {
 
             return gps;
         }
+    }
+
+    private void setText(Response<WeatherDataModel> response) {
+        String name;
+        try {
+            name = response.body().getCityName();
+        } catch( NullPointerException e) {
+            name = "";
+        }
+
+        String weatherDesc;
+        try {
+            weatherDesc = response.body().getWeather().get(0).getDescription();
+        } catch( NullPointerException e) {
+            weatherDesc = "";
+        }
+
+        float temp;
+        try {
+            temp = response.body().getMain().getTemp();
+        } catch( NullPointerException e) {
+            temp = 0;
+        }
+
+        float tempFeelsLike;
+        try {
+            tempFeelsLike = response.body().getMain().getTempFeelsLike();
+        } catch( NullPointerException e) {
+            tempFeelsLike = 0;
+        }
+
+        float pressure;
+        try {
+            pressure = response.body().getMain().getPressure();
+        } catch( NullPointerException e) {
+            pressure = 0;
+        }
+
+        float windSpeed;
+        try {
+            windSpeed = response.body().getWind().getSpeed();
+        } catch( NullPointerException e) {
+            windSpeed = 0;
+        }
+
+        int sunrise;
+        try {
+            sunrise = response.body().getSys().getSunriseTime();
+        } catch( NullPointerException e) {
+            sunrise = 0;
+        }
+
+        int sunset;
+        try {
+            sunset = response.body().getSys().getSunsetTime();
+        } catch( NullPointerException e) {
+            sunset = 0;
+        }
+
+        int humidity;
+        try {
+            humidity = response.body().getMain().getHumidity();
+        } catch( NullPointerException e) {
+            humidity = 0;
+        }
+
+        int visibility;
+        try {
+            visibility = response.body().getVisibility();
+        } catch( NullPointerException e) {
+            visibility = 0;
+        }
+
+        float rainfall1h;
+        try {
+            rainfall1h = response.body().getRain().getRain1h();
+        } catch( NullPointerException e) {
+            rainfall1h = 0;
+        }
+
+        if(rainfall1h == 0) {
+            rainfall1hView.setVisibility(View.GONE);
+        } else {
+            rainfall1hView.setVisibility(View.VISIBLE);
+        }
+
+        float rainfall3h;
+        try {
+            rainfall3h = response.body().getRain().getRain3h();
+        } catch( NullPointerException e) {
+            rainfall3h = 0;
+        }
+
+        if(rainfall3h == 0) {
+            rainfall3hView.setVisibility(View.GONE);
+        } else {
+            rainfall3hView.setVisibility(View.VISIBLE);
+        }
+
+        float snowfall1h;
+        try {
+            snowfall1h = response.body().getSnow().getSnow1h();
+        } catch( NullPointerException e) {
+            snowfall1h = 0;
+        }
+
+        if(snowfall1h == 0) {
+            snowfall1hView.setVisibility(View.GONE);
+        } else {
+            snowfall1hView.setVisibility(View.VISIBLE);
+        }
+
+        float snowfall3h;
+        try {
+            snowfall3h = response.body().getSnow().getSnow3h();
+        } catch( NullPointerException e) {
+            snowfall3h = 0;
+        }
+
+        if(snowfall3h == 0) {
+            snowfall3hView.setVisibility(View.GONE);
+        } else {
+            snowfall3hView.setVisibility(View.VISIBLE);
+        }
+
+        Date sunriseDate = new Date((long) sunrise * 1000);
+        Date sunsetDate = new Date((long) sunset * 1000);
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
+        format.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"));
+
+        cityView.setText(getString(R.string.city_text) + " " + name);
+        weatherDescView.setText(getString(R.string.weather_main_text) + " " + weatherDesc);
+        rainfall1hView.setText(getString(R.string.rain_1h_text) + " " + rainfall1h + " " + getString(R.string.unit_mm_text));
+        rainfall3hView.setText(getString(R.string.rain_3h_text) + " " + rainfall3h + " " + getString(R.string.unit_mm_text));
+        snowfall1hView.setText(getString(R.string.snow_1h_text) + " " + snowfall1h + " " + getString(R.string.unit_mm_text));
+        snowfall3hView.setText(getString(R.string.snow_3h_text) + " " + snowfall3h + " " + getString(R.string.unit_mm_text));
+        tempView.setText(getString(R.string.temp_text) + " " + temp + " °C");
+        tempFeelsLikeView.setText(getString(R.string.temp_FeelsLike_text) + " " + tempFeelsLike  + " °C");
+        humidityView.setText(getString(R.string.humidity_text) + " " + humidity + "%");
+        windSpeedView.setText(getString(R.string.wind_speed_text) + " " + windSpeed + " " + getString(R.string.unit_metrePerSecond_text));
+        visibilityView.setText(getString(R.string.visibility_text) + " " + visibility + " " + getString(R.string.unit_metre_text));
+        pressView.setText(getString(R.string.pressure_text) + " " + String.valueOf(pressure * 0.750064f) + " " + getString(R.string.unit_pressure_text));
+        sunriseView.setText(getString(R.string.sunrise_text) + " " + format.format(sunriseDate));
+        sunsetView.setText(getString(R.string.sunset_text) + " " + format.format(sunsetDate));
     }
 }

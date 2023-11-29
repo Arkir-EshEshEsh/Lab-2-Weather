@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -29,6 +30,30 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/weather_desc_text_view" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/rainfall_1h_text_view"
+        android:visibility="gone" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/rainfall_3h_text_view"
+        android:visibility="gone" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/snowfall_1h_text_view"
+        android:visibility="gone" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/snowfall_3h_text_view"
+        android:visibility="gone" />
 
     <TextView
         android:layout_width="match_parent"
@@ -79,12 +104,12 @@
         android:layout_marginTop="30dp" />
 
     <Button
+        android:id="@+id/gps_weather_update_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="@string/gps_button_text"
-        android:id="@+id/gps_weather_update_button"
-        android:layout_marginTop="5dp" />
+        android:layout_marginTop="5dp"
+        android:text="@string/gps_button_text" />
 
     <ProgressBar
         android:layout_width="wrap_content"
